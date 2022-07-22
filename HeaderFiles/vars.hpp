@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 
-enum tileNames {tnGrass = 0, tnTallGrass, tnForest, tnWater}; // TileName grass ==> tnGrass
-sf::Texture grassMat, tallGrassMat, forestMat, waterMat; // Textures in global scope so they are always loaded 
+extern enum tileNames {tnGrass = 0, tnTallGrass, tnForest, tnWater}; // TileName grass ==> tnGrass
+extern sf::Texture grassMat, tallGrassMat, forestMat, waterMat; // Textures in global scope so they are always loaded 
 
 #endif

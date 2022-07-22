@@ -5,7 +5,7 @@ CFLAGS  := -g -Wall
 
 SFML_FLAGS := -IHeaderFiles/ -ISFML/include/ -LSFML/lib -lsfml-window-d -lsfml-graphics-d -lsfml-audio-d -lsfml-system-d
 
-link: main.o player.o tile.o tiles.o loadGraphics.o
+link: obj/%.o
 	$(CXX) $^ $(SFML_FLAGS) $(CFLAGS) -o bin/main.exe
 
 obj/%.o: main.cpp
