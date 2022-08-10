@@ -6,7 +6,7 @@ class grassTile : public tile
     grasstile()
     {
         allowedNeighbors = (std::vector<int>){tnGrass, tnTallGrass};
-        sprite.setTexture(grassMat);
+        sprite.setTexture(grassImg);
     }
 };
 
@@ -15,7 +15,7 @@ class tallGrassTile: public tile
     tallGrasstile()
     {
         allowedNeighbors = (std::vector<int>){tnGrass, tnTallGrass, tnForest};
-        sprite.setTexture(tallGrassMat);
+        sprite.setTexture(tallGrassImg);
     }
 };
 
@@ -24,7 +24,7 @@ class forestTile: public tile
     forestTile()
     {
         allowedNeighbors = (std::vector<int>){tnTallGrass, tnForest, tnWater};
-        sprite.setTexture(forestMat);
+        sprite.setTexture(forestImg);
     }
 };
 
@@ -33,6 +33,6 @@ class waterTile: public tile
     watertile()
     {
         allowedNeighbors = (std::vector<int>){tnForest, tnWater};
-        sprite.setTexture(waterMat);
+        sprite.setTexture(waterImg);
     }
 };
