@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
+#include <memory>
 
 #include <tiles.hpp>
 #include <terraingeneration.hpp>
@@ -51,7 +52,6 @@ void generateTiles()
     std::vector<int> allowedTiles;
     std::vector<int> tempKey;
 
-
     for (int i = 0; i < (int)emptyTiles.size(); i++)
     {
         tilesAndKeys = getTileOptions(emptyTiles[i]);
@@ -70,27 +70,27 @@ void generateTiles()
         std::vector<int>::iterator it = std::min_element(allowedTilesAmounts.begin(), allowedTilesAmounts.end()); // gets the tile with the lowest possible amount of neighbors
         int minTileIndex = std::distance(allowedTilesAmounts.begin(), it);
 
-        std::cout << sizeof(tile) << std::endl;
-        tile* t = (tile*)std::malloc(sizeof(tile));
-        printf("goody ahh malloc\n");
-        int randomTile = tileOptionsList[i][rand() % tileOptionsList[i].size()];
+        //std::unique_ptr<tile> t; // = std::make_unique<tile>()
 
+        std::unique_ptr<tile> t;
+
+        int randomTile = tileOptionsList[i][rand() % tileOptionsList[i].size()];
         switch (randomTile)
         {
             case tnGrass:
-                t = &grassTile;
+                t = std::make_unique<tile>(grassTile);
                 break;
             case tnTallGrass:
-                t = &tallGrassTile;
+                t = std::make_unique<tile>(tallGrassTile);
                 break;
             case tnForest:
-                t = &forestTile;
+                t = std::make_unique<tile>(forestTile);
                 break;
             case tnSand:
-                t = &sandTile;
+                t = std::make_unique<tile>(sandTile);
                 break;
             case tnWater:
-                t = &waterTile;
+                t = std::make_unique<tile>(waterTile);
                 break;
         }
 
@@ -101,10 +101,10 @@ void generateTiles()
         tiles.emplace_back(*t);
         filledTiles.emplace_back(emptyTiles[minTileIndex]);
 
-        printf("what da fuq");
+        printf("update surounding tiles \n\n\n");
+
         // Update surrounding tiles
         tempKey = {keys[minTileIndex + i][0] + 1, keys[minTileIndex + i][1]};
-
         std::vector<std::vector<int>>::iterator currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
         if (currentTileIt != keys.end())
         {
@@ -154,8 +154,6 @@ void generateTiles()
             allowedTilesAmounts[i] = allowedTiles.size();
             tileOptionsList[i] = allowedTiles;
         }
-        printf("ahh\n");
-
     }
 
     allowedTilesAmounts = {};
@@ -167,38 +165,45 @@ void generateTiles()
 
 }
 
-std::vector<int> checkTileCompatability(std::vector<int> vec1, std::vector<int> vec2)
+void checkTileCompatability(std::vector<int> vec1, std::vector<int> vec2, std::vector<int>* returnVec)
 {
-    std::vector<int> returnVec = {};
+    printf("debug0\n");
     std::vector<int>::iterator it; 
-
+    printf("debug1\n");
     if (vec1.size() < vec2.size())
     {
         for (int i = 0; i < (int)vec2.size(); i++)
         {
+            printf("debug2\n");
             it = std::find(vec1.begin(), vec1.end(), vec2[i]);
             if (it != vec1.end())
             {
-                returnVec.emplace_back(vec2[i]);
+                printf("debug3\n");
+                returnVec->emplace_back(vec2[i]);
             }
         }
     }
     else
     {
+        printf("debug4\n");
         for (int i = 0; i < (int)vec1.size(); i++)
         {
+            printf("debug5\n");
             it = std::find(vec2.begin(), vec2.end(), vec1[i]);
             if (it != vec2.end())
             {
-                returnVec.emplace_back(vec1[i]);
+                printf("debug6\n");
+                returnVec->emplace_back(vec1[i]);
+                printf("debug7\n");
             }
         }
     }
-    return returnVec;
+    return;
 }
 
 std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
 {
+    printf("Hit the griddy\n");
     std::vector<int> allowedTiles = {tnGrass, tnTallGrass, tnForest, tnSand, tnWater};
     
     if ((int)filledTiles.size() == 0)
@@ -206,15 +211,21 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
         return {{tnGrass}, key};
     }
 
+    printf("+X\n");
     // ==================================== +X
     std::vector<int> tempKey = {key[0] + 1, key[1]};
+    printf("goofy ahh tempKey?\n");
     std::vector<std::vector<int>>::iterator it; 
+    printf("no?\n");
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
+    printf("not here?\n");
     if (it == filledTiles.end())
     {
-        allowedTiles = checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles);
+        printf("allowed tiles?\n");
+        checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
+        printf("reeeeeeeeee\n");
     }
-
+    printf("-X\n");
     // ================================================ -X
     tempKey[0] = key[0] - 1; 
     tempKey[1] = key[1];
@@ -222,9 +233,10 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
     if (it == filledTiles.end())
     {
-        allowedTiles = checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles);
+        checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
     }
 
+    printf("+Y\n");
     // ======================================= +Y
     tempKey[0] = key[0];
     tempKey[1] = key[1] + 1;
@@ -232,9 +244,10 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
     if (it == filledTiles.end())
     {
-        allowedTiles = checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles);
+        checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
     }
 
+    printf("-Y\n");
     // =================================== -Y
     tempKey[0] = key[0];
     tempKey[1] = key[1] - 1;
@@ -242,8 +255,10 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
     if (it == filledTiles.end())
     {
-        allowedTiles = checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles);
+        checkTileCompatability(tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
     }
+
+    printf("calculations\n");
 
     return {allowedTiles, tempKey};
 }

@@ -1,7 +1,7 @@
 CXX = g++
 
-# -pipe -O2
-CFLAGS  := -g -Wall -Werror -Wextra -Wpedantic
+# -pipe -O2 -Werror
+CFLAGS  := -g -Wall -Wextra -Wpedantic
 
 SFML_FLAGS := -IHeaderFiles/ -ISFML/include/ -LSFML/lib -lsfml-window-d -lsfml-graphics-d -lsfml-audio-d -lsfml-system-d
 
@@ -32,4 +32,4 @@ all:
 	$(CXX) obj/* $(SFML_FLAGS) $(CFLAGS) -o bin/main.exe
 
 clean:
-	$(RM) *.o
+	rm -rf obj/*

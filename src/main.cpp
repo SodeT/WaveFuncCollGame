@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include <memory>
 
 // SFML includes
 #include <SFML/Graphics.hpp>
@@ -39,7 +40,6 @@ int main()
     window.display();
 */
     loadGraphics();
-
     findEmptyTiles(4 * tileSize, 4 * tileSize);
     generateTiles();
 
