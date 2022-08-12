@@ -1,38 +1,33 @@
+#include <Vector>
+#include <SFML/Graphics.hpp>
 #include <vars.hpp>
-#include "tile.cpp"
+#include <tiles.hpp>
+#include <iostream>
 
-class grassTile : public tile
+tile::tile(int x, int y, int tileType, std::vector<int> allowedNeighbors)
+    : x(x * tileSize), y(y * tileSize), tileType(tileType), allowedNeighbors(allowedNeighbors)
 {
-    grasstile()
-    {
-        allowedNeighbors = (std::vector<int>){tnGrass, tnTallGrass};
-        sprite.setTexture(grassImg);
-    }
-};
+    size = tileSize;
+    //sprite.setPosition(x, y);
 
-class tallGrassTile: public tile
-{
-    tallGrasstile()
+    switch (tileType)
     {
-        allowedNeighbors = (std::vector<int>){tnGrass, tnTallGrass, tnForest};
-        sprite.setTexture(tallGrassImg);
+        case tnGrass:
+            sprite.setTexture(grassImg);
+            break;
+        case tnTallGrass:
+            sprite.setTexture(tallGrassImg);
+            break;
+        case tnForest:
+            sprite.setTexture(forestImg);
+            break;
+        case tnSand:
+            sprite.setTexture(sandImg);
+            break;
+        case tnWater:
+            sprite.setTexture(waterImg);
+            break;
     }
-};
-
-class forestTile: public tile
-{
-    forestTile()
-    {
-        allowedNeighbors = (std::vector<int>){tnTallGrass, tnForest, tnWater};
-        sprite.setTexture(forestImg);
-    }
-};
-
-class waterTile: public tile
-{
-    watertile()
-    {
-        allowedNeighbors = (std::vector<int>){tnForest, tnWater};
-        sprite.setTexture(waterImg);
-    }
-};
+    
+    sprite.setColor(sf::Color(255, 255, 255, 255));
+}
