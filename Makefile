@@ -3,6 +3,8 @@ CXX = g++
 # -pipe -O2 -Werror
 CFLAGS  := -g -Wall -Wextra -Wpedantic
 
+CFLAGS += -fsized-deallocation
+
 SFML_FLAGS := -IHeaderFiles/ -ISFML/include/ -LSFML/lib -lsfml-window-d -lsfml-graphics-d -lsfml-audio-d -lsfml-system-d
 
 link: obj/main.o obj/player.o obj/tiles.o obj/loadGraphics.o obj/terrainGeneration.o

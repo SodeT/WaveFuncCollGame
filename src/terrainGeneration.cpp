@@ -25,7 +25,6 @@ void* operator new(size_t size)
 void operator delete(void* mem, size_t size)
 {
     allocatedBytes -= size;
-    std::cout << "freeing: " << size << " bytes\n";
     free(mem);
 }
 
