@@ -39,15 +39,18 @@ int main()
     window.draw(loadingScreenSprite);
     window.display();
 */
+    printf("load\n");
     loadGraphics();
+    printf("find empty\n");
     findEmptyTiles(4 * tileSize, 4 * tileSize);
+    printf("generate\n");
     generateTiles();
-
+    printf("render\n");
  
     window.clear(sf::Color(23,52,123));
     for (int i = 0; i < (int)tiles.size(); i++)
     {
-        std::cout << tiles[i].tileType << std::endl;
+        std::cout << tiles[i].x << ", " << tiles[i].y << std::endl;
         window.draw(tiles[i].sprite);
     }
 
