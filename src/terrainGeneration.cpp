@@ -9,29 +9,16 @@
 #include <terraingeneration.hpp>
 #include <vars.hpp>
 
+#include <iterator>
+
 //temp
 #include <sstream>
 #include <string>
 #include <iostream>
 
-int allocatedBytes = 0;
-
-void* operator new(size_t size)
-{
-    allocatedBytes += size;
-    return malloc(size);
-}
-
-void operator delete(void* mem, size_t size)
-{
-    allocatedBytes -= size;
-    free(mem);
-}
-
 
 void findEmptyTiles(float playerX, float playerY)
 {
-    std::cout << "find begining bytes: " << allocatedBytes << std::endl;
     int playerGridX = playerX / tileSize;
     int playerGridY = playerY / tileSize;
 
@@ -42,19 +29,25 @@ void findEmptyTiles(float playerX, float playerY)
     {
         for (int y = generationStartY; y < generationStartY + generationDistance; y++)
         {
-            std::vector<int> key = {x,y};
-            if (std::find(filledTiles.begin(), filledTiles.end(), key) == filledTiles.end())
             {
-                emptyTiles.emplace_back(key);
+                std::vector<int> key = {x,y};
+                if (std::find(filledTiles.begin(), filledTiles.end(), key) == filledTiles.end())
+                {
+                    emptyTiles.emplace_back(key);
+                    
+                }
             }
         }
     }
-    std::cout << "find end bytes: " << allocatedBytes << std::endl;
 }
 
 void generateTiles()
 {
-    std::cout << "begining bytes: " << allocatedBytes << std::endl;
+
+    if (emptyTiles.size() == 0) // if there are no empty tiles to fill
+    {
+        return;
+    }
 
     tile grassTile(0, 0, tnGrass, {tnGrass, tnTallGrass, tnSand});
     tile tallGrassTile(0, 0, tnTallGrass, {tnGrass, tnTallGrass, tnForest});
@@ -62,24 +55,23 @@ void generateTiles()
     tile sandTile(0, 0, tnSand, {tnGrass, tnSand, tnWater});
     tile waterTile(0, 0, tnWater, {tnSand, tnWater});
 
-    std::vector<int> allowedTilesAmounts;
-    std::vector<std::vector<int>> tileOptionsList;
-    std::vector<std::vector<int>> keys;
+    std::vector<int> allowedTilesAmounts;               // the number of allowed tiles           { 3,                                2,                  2                       }
+    std::vector<std::vector<int>> tileOptionsList;      // the allowed tiles for that tile index { {tnGrass, tnTallGrass, tnSand},   {tnWater, tnSand},  {tnTallGrass, tnForest} }
+    std::vector<std::vector<int>> keys;                 // the positions of the tiles            { {3,6},                            {6,1},              {2,9}                   }
 
-    std::vector<std::vector<int>> tilesAndKeys;
-    std::vector<int> allowedTiles;
-    std::vector<int> tempKey;
+    std::vector<std::vector<int>> tilesAndKeys;         // tile number {{tnGrass, tnTallGrass}, {x, y}}
+    std::vector<int> allowedTiles;                      // temp for individual index {tnGrass, tntallGrass}
+    std::vector<int> tempKey;                           // temp coordinates {x, y}
+    tempKey.reserve(2); // preallocate 2 ints
 
+    printf("get empty tiles list\n");
     for (int i = 0; i < (int)emptyTiles.size(); i++)
     {
         tilesAndKeys = getTileOptions(emptyTiles[i]);
 
-        allowedTiles = tilesAndKeys[0];
-        tempKey = tilesAndKeys[1];
-
-        allowedTilesAmounts.emplace_back(allowedTiles.size());
-        tileOptionsList.emplace_back(allowedTiles);
-        keys.emplace_back(tempKey);
+        allowedTilesAmounts.emplace_back(tilesAndKeys[0].size());
+        tileOptionsList.push_back(tilesAndKeys[0]);
+        keys.push_back(tilesAndKeys[1]);
     }
 
     int loopLength = tileOptionsList.size();
@@ -91,10 +83,12 @@ void generateTiles()
         std::unique_ptr<tile> t;
 
         int randomTile = tileOptionsList[i][rand() % tileOptionsList[i].size()];
+        printf("tileOptionsList: %d\n", tileOptionsList[i].size());
         switch (randomTile)
         {
             case tnGrass:
                 t = std::make_unique<tile>(grassTile);
+
                 break;
             case tnTallGrass:
                 t = std::make_unique<tile>(tallGrassTile);
@@ -110,28 +104,47 @@ void generateTiles()
                 break;
         }
 
-        t->x = keys[minTileIndex + i][0]; 
-        t->y = keys[minTileIndex + i][1]; 
+        t->x = keys[minTileIndex][0]; 
+        t->y = keys[minTileIndex][1];
         t->sprite.setPosition(t->x * tileSize, t->y * tileSize);
 
         tiles.emplace_back(*t);
         filledTiles.emplace_back(emptyTiles[minTileIndex]);
 
+
         // Update surrounding tiles
-        tempKey = {keys[minTileIndex + i][0] + 1, keys[minTileIndex + i][1]};
+        printf("update surrounding tiles\n");
+        tempKey = {keys[minTileIndex][0] + 1, keys[minTileIndex][1]};
         std::vector<std::vector<int>>::iterator currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
-        printf("+X?\n");
+
         if (currentTileIt != keys.end())
         {
             int currentTile = std::distance(keys.begin(), currentTileIt);
 
             allowedTiles = getTileOptions(emptyTiles[currentTile])[0];
-
-            allowedTilesAmounts[i] = allowedTiles.size();
-            tileOptionsList[i] = allowedTiles;
         }
         
-        tempKey = {keys[minTileIndex + i][0] - 1, keys[minTileIndex + i][1]};
+        tempKey = {keys[minTileIndex][0] - 1, keys[minTileIndex][1]};
+
+        currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
+        if (currentTileIt != keys.end())
+        {
+            int currentTile = std::distance(keys.begin(), currentTileIt);
+
+            allowedTiles = getTileOptions(emptyTiles[currentTile])[0];
+        }
+
+        tempKey = {keys[minTileIndex][0], keys[minTileIndex][1] + 1};
+
+        currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
+        if (currentTileIt != keys.end())
+        {
+            int currentTile = std::distance(keys.begin(), currentTileIt);
+
+            allowedTiles = getTileOptions(emptyTiles[currentTile])[0];
+        }
+
+        tempKey = {keys[minTileIndex][0], keys[minTileIndex][1] - 1};
 
         currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
         if (currentTileIt != keys.end())
@@ -140,97 +153,69 @@ void generateTiles()
 
             allowedTiles = getTileOptions(emptyTiles[currentTile])[0];
 
-            allowedTilesAmounts[i] = allowedTiles.size();
-            tileOptionsList[i] = allowedTiles;
         }
+        allowedTilesAmounts[i] = allowedTiles.size();
+        tileOptionsList[i] = allowedTiles;
 
-        tempKey = {keys[minTileIndex + i][0], keys[minTileIndex + i][1] + 1};
+        allowedTiles.clear();
 
-        currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
-        if (currentTileIt != keys.end())
-        {
-            int currentTile = std::distance(keys.begin(), currentTileIt);
-
-            allowedTiles = getTileOptions(emptyTiles[currentTile])[0];
-
-            allowedTilesAmounts[i] = allowedTiles.size();
-            tileOptionsList[i] = allowedTiles;
-        }
-
-        tempKey = {keys[minTileIndex + i][0], keys[minTileIndex + i][1] - 1};
-
-        currentTileIt = std::find(keys.begin(), keys.end(), tempKey);
-        if (currentTileIt != keys.end())
-        {
-            int currentTile = std::distance(keys.begin(), currentTileIt);
-
-            allowedTiles = getTileOptions(emptyTiles[currentTile])[0];
-
-            allowedTilesAmounts[i] = allowedTiles.size();
-            tileOptionsList[i] = allowedTiles;
-        }
     }
-
-    allowedTilesAmounts = {};
-    tileOptionsList = {};
-    keys = {};
-    emptyTiles = {};
-
     return;
-
 }
 
-void checkTileCompatability(std::vector<int>* returnVec) //std::vector<int> vec1, std::vector<int> vec2, std::vector<int>* returnVec)
+// TODO inline if statment shit for FPS???
+std::vector<int> checkTileCompatability(std::vector<int> &vec1, std::vector<int> &vec2)
 {
-    printf("inside\n");
-    /*
+    std::vector<int> returnVec;
     std::vector<int>::iterator it; 
+    int vecSize;
+
     if (vec1.size() < vec2.size())
     {
-        for (int i = 0; i < (int)vec2.size(); i++)
+        vecSize = vec2.size();
+        for (int i = 0; i < vecSize; i++)
         {
             it = std::find(vec1.begin(), vec1.end(), vec2[i]);
             if (it != vec1.end())
             {
-                returnVec->push_back(vec2[i]);
+                returnVec.push_back(vec2[i]);
             }
         }
     }
     else
     {
-        for (int i = 0; i < (int)vec1.size(); i++)
+        vecSize = vec1.size();
+        for (int i = 0; i < vecSize; i++)
         {
             it = std::find(vec2.begin(), vec2.end(), vec1[i]);
             if (it != vec2.end())
             {
-                returnVec->push_back(vec1[i]);
+                returnVec.push_back(vec1[i]);
             }
         }
     }
-    */
-    printf("return\n");
-    return;
+    
+    return returnVec;
 }
 
 std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
 {
     std::vector<int> allowedTiles = {tnGrass, tnTallGrass, tnForest, tnSand, tnWater};
-    if ((int)filledTiles.size() == 0)
+    if (filledTiles.size() == 0)
     {
         return {{tnGrass}, key};
     }
 
-    // ==================================== +X
+    // ==================================== +X                                   filledTiles.begin() - it]
     std::vector<int> tempKey = {key[0] + 1, key[1]};
     std::vector<std::vector<int>>::iterator it; 
 
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
+    int tileIndex = std::distance(filledTiles.begin(), it) - 1;
+    printf("tileIndex: %d\ntiles size: %d\n", tileIndex, tiles.size());
     if (it == filledTiles.end())
     {
-        std::cout << "end bytes: " << allocatedBytes << std::endl;
-        printf("before\n");
-        //checkTileCompatability(&allowedTiles);//tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
-        printf("after\n");
+        allowedTiles = checkTileCompatability(allowedTiles, tiles[tileIndex].allowedNeighbors);
     }
 
     // ================================================ -X
@@ -240,7 +225,7 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
     if (it == filledTiles.end())
     {
-        //checkTileCompatability(&allowedTiles);//tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
+        allowedTiles = checkTileCompatability(allowedTiles, tiles[tileIndex].allowedNeighbors);
     }
 
 
@@ -251,7 +236,7 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
     if (it == filledTiles.end())
     {
-        //checkTileCompatability(&allowedTiles);//tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
+        allowedTiles = checkTileCompatability(allowedTiles, tiles[tileIndex].allowedNeighbors);
     }
 
 
@@ -262,9 +247,9 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
     it = std::find(filledTiles.begin(), filledTiles.end(), tempKey);
     if (it == filledTiles.end())
     {
-        //checkTileCompatability(&allowedTiles);//tiles[it - filledTiles.begin()].allowedNeighbors, allowedTiles, &allowedTiles);
+        allowedTiles = checkTileCompatability(allowedTiles, tiles[tileIndex].allowedNeighbors);
     }
-
+    printf("allowedTiles: %d\n", allowedTiles.size());
     return {allowedTiles, tempKey};
 }
 
