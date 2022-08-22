@@ -1,7 +1,7 @@
 CXX = g++
 
 # -pipe -O2 -Werror
-CFLAGS  := -g -Wall -Wextra -Wpedantic -Werror
+CFLAGS  := -O3 -Wall -Wextra -Wpedantic -Werror
 
 SFML_FLAGS := -IHeaderFiles/ -ISFML/include/ -LSFML/lib -lsfml-window-d -lsfml-graphics-d -lsfml-audio-d -lsfml-system-d
 

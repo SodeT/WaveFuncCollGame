@@ -3,7 +3,7 @@ int gameState;
 
 // terrain generation
 int tileSize = 32;
-int generationDistance = 5;
+int generationDistance = 500;
 
 std::vector<tile> tiles;
 std::vector<std::vector<int>> filledTiles;

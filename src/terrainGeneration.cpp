@@ -64,7 +64,6 @@ void generateTiles()
     std::vector<int> tempKey;                           // temp coordinates {x, y}
     tempKey.reserve(2); // preallocate 2 ints
 
-    printf("get empty tiles list\n");
     for (int i = 0; i < (int)emptyTiles.size(); i++)
     {
         tilesAndKeys = getTileOptions(emptyTiles[i]);
@@ -83,7 +82,6 @@ void generateTiles()
         std::unique_ptr<tile> t;
 
         int randomTile = tileOptionsList[i][rand() % tileOptionsList[i].size()];
-        printf("tileOptionsList: %d\n", allowedTilesAmounts[i]);
         switch (randomTile)
         {
             case tnGrass:
@@ -113,16 +111,10 @@ void generateTiles()
         tiles.push_back(*t);
         filledTiles.emplace_back(emptyTiles[minTileIndex]);
 
-        printf("keys\n");
-
-        for (int h = 0; h < (int)keys.size(); h++)
-        {
-            printf("%i, %i\n",keys[h][0], keys[h][1]);
-        }
-
-        allowedTilesAmounts.erase(allowedTilesAmounts.begin(), allowedTilesAmounts.begin() + minTileIndex);
-        tileOptionsList.erase(tileOptionsList.begin(), tileOptionsList.begin() + minTileIndex);
-        keys.erase(keys.begin(), keys.begin() + minTileIndex);
+        
+        allowedTilesAmounts.erase(std::next(allowedTilesAmounts.begin(), minTileIndex));
+        tileOptionsList.erase(std::next(tileOptionsList.begin(), minTileIndex));
+        keys.erase(std::next(keys.begin(), minTileIndex));
 
         // Update surrounding tiles
         std::vector<std::vector<int>>::iterator currentTileIt;
@@ -191,7 +183,6 @@ void generateTiles()
     return;
 }
 
-// TODO inline if statment shit for FPS???
 std::vector<int> checkTileCompatability(std::vector<int> &vec1, std::vector<int> &vec2)
 {
     std::vector<int> returnVec;
