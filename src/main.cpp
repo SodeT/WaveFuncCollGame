@@ -18,8 +18,6 @@
 float screenWidth = 800;
 float screenHeight = 600;
 
-time_t ntime;
-
 sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "Test");
 sf::Clock deltaClock;
 sf::Time deltaTime;
@@ -46,11 +44,11 @@ int main()
     printf("generate\n");
     generateTiles();
     printf("render\n");
- 
-    window.clear(sf::Color(23,52,123));
+    printf("tiles size: %i\n", tiles.size());
+    window.clear(sf::Color(90, 90, 90));
     for (int i = 0; i < (int)tiles.size(); i++)
     {
-        std::cout << tiles[i].x << ", " << tiles[i].y << std::endl;
+        //std::cout << tiles[i].x << ", " << tiles[i].y << std::endl;
         window.draw(tiles[i].sprite);
     }
 
