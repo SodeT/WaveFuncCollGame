@@ -74,14 +74,16 @@ void generateTiles()
     }
 
     //int loopLength = tileOptionsList.size();
-    for (int i = 0; i < (int)tileOptionsList.size(); i++)
+    //for (int i = 0; i > loopLength; i++)
+    while ((int)tileOptionsList.size() > 0)
     {
+        //printf("i: %i", i);
         std::vector<int>::iterator it = std::min_element(allowedTilesAmounts.begin(), allowedTilesAmounts.end()); // gets the tile with the lowest possible amount of neighbors
         int minTileIndex = std::distance(allowedTilesAmounts.begin(), it);
 
         std::unique_ptr<tile> t;
 
-        int randomTile = tileOptionsList[i][rand() % tileOptionsList[i].size()];
+        int randomTile = tileOptionsList[minTileIndex][rand() % tileOptionsList[minTileIndex].size()];
         switch (randomTile)
         {
             case tnGrass:
