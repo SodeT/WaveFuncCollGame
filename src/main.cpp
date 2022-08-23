@@ -39,12 +39,16 @@ int main()
 */
     printf("load\n");
     loadGraphics();
+
     printf("find empty\n");
     findEmptyTiles(4 * tileSize, 4 * tileSize);
+    printf("Empty tiles: %i\n", emptyTiles.size());
     printf("generate\n");
     generateTiles();
+
     printf("render\n");
     printf("tiles size: %i\n", tiles.size());
+
     window.clear(sf::Color(90, 90, 90));
     for (int i = 0; i < (int)tiles.size(); i++)
     {

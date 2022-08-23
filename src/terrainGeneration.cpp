@@ -31,11 +31,17 @@ void findEmptyTiles(float playerX, float playerY)
         {
             {
                 std::vector<int> key = {x,y};
-                if (std::find(filledTiles.begin(), filledTiles.end(), key) == filledTiles.end())
+                if (std::find(filledTiles.begin(), filledTiles.end(), key) == filledTiles.end()) // this does not work, it adds tiles that are already there
                 {
                     emptyTiles.emplace_back(key);
                     
                 }
+                /*
+                else
+                {
+                    printf("Tile does already exist!\n%i, %i\n", key[0], key[1]);
+                }
+                */
             }
         }
     }
@@ -64,6 +70,13 @@ void generateTiles()
     std::vector<int> tempKey;                           // temp coordinates {x, y}
     tempKey.reserve(2); // preallocate 2 ints
 
+    if (filledTiles.size() == 0) // preallocate vectors
+    {
+        allowedTilesAmounts.reserve(emptyTiles.size());
+        tileOptionsList.reserve(emptyTiles.size());
+        keys.reserve(emptyTiles.size());
+    }
+
     for (int i = 0; i < (int)emptyTiles.size(); i++)
     {
         tilesAndKeys = getTileOptions(emptyTiles[i]);
@@ -82,6 +95,15 @@ void generateTiles()
         int minTileIndex = std::distance(allowedTilesAmounts.begin(), it);
 
         std::unique_ptr<tile> t;
+        /*
+        printf("\n\n\n================");
+        for (int h = 0; h < (int)tileOptionsList.size(); h++)
+        {
+            printf("allowed tiles: %i\n", tileOptionsList[h].size());
+        }
+        */
+
+        printf("=========== %i\n", tileOptionsList[minTileIndex].size());
 
         int randomTile = tileOptionsList[minTileIndex][rand() % tileOptionsList[minTileIndex].size()];
         switch (randomTile)
@@ -112,11 +134,6 @@ void generateTiles()
 
         tiles.push_back(*t);
         filledTiles.emplace_back(emptyTiles[minTileIndex]);
-
-        
-        allowedTilesAmounts.erase(std::next(allowedTilesAmounts.begin(), minTileIndex));
-        tileOptionsList.erase(std::next(tileOptionsList.begin(), minTileIndex));
-        keys.erase(std::next(keys.begin(), minTileIndex));
 
         // Update surrounding tiles
         std::vector<std::vector<int>>::iterator currentTileIt;
@@ -170,18 +187,13 @@ void generateTiles()
             tileOptionsList[currentTileIndex] = allowedTiles;
 
         }
-        /*
-        printf("_____------____\n");
-        for (int h = 0; h < (int)tileOptionsList.size(); h++)
-        {
-            for (int g = 0; g < (int)tileOptionsList[h].size(); g++)
-            {
-                printf("%i, ", tileOptionsList[h][g]);
-            }
-            printf("\n");
-        }*/
 
+        allowedTilesAmounts.erase(std::next(allowedTilesAmounts.begin(), minTileIndex));
+        tileOptionsList.erase(std::next(tileOptionsList.begin(), minTileIndex));
+        keys.erase(std::next(keys.begin(), minTileIndex));
     }
+    emptyTiles.clear();
+    printf("empty tiles: %i\n", emptyTiles.size());
     return;
 }
 
@@ -227,7 +239,7 @@ std::vector<std::vector<int>> getTileOptions(std::vector<int> key)
         return {{tnGrass, tnTallGrass, tnForest, tnSand, tnWater}, key};
     }
 
-    // ==================================== +X                                   filledTiles.begin() - it]
+    // ==================================== +X 
     std::vector<int> tempKey = {key[0] + 1, key[1]};
     std::vector<std::vector<int>>::iterator it; 
 
