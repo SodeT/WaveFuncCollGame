@@ -133,7 +133,7 @@ void generateTiles()
         t->sprite.setPosition(t->x * tileSize, t->y * tileSize);
 
         tiles.push_back(*t);
-        filledTiles.emplace_back(emptyTiles[minTileIndex]);
+        filledTiles.emplace_back(t->x, t->y);
 
         // Update surrounding tiles
         std::vector<std::vector<int>>::iterator currentTileIt;

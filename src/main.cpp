@@ -46,6 +46,12 @@ int main()
     printf("generate\n");
     generateTiles();
 
+    printf("find empty\n");
+    findEmptyTiles(13 * tileSize, 4 * tileSize);
+    printf("Empty tiles: %i\n", emptyTiles.size());
+    printf("generate\n");
+    generateTiles();
+
     printf("render\n");
     printf("tiles size: %i\n", tiles.size());
 
